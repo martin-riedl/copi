@@ -316,7 +316,7 @@ abstract class GLRenderable {
   
   // Slider Composite
   val tools = new org.eclipse.swt.widgets.Composite(shell, SWT.BOTTOM)
-  val timefak_slider = new Slider(tools,SWT.HORIZONTAL);
+  val timefak_slider = new Scale(tools,SWT.HORIZONTAL);
   timefak_slider.setMinimum(1)
 	timefak_slider.setMaximum(100000)
 	timefak_slider.setIncrement(1)
@@ -326,7 +326,7 @@ abstract class GLRenderable {
   val tfLabel = new Label(tools, SWT.NULL)
 	tfLabel.setText("TimeScaleSlider")
 
-  val distance_slider = new Slider(tools,SWT.HORIZONTAL)
+  val distance_slider = new Scale(tools,SWT.HORIZONTAL)
   distance_slider.setMinimum(1)
 	distance_slider.setMaximum(1000)
 	distance_slider.setIncrement(1)
@@ -336,7 +336,7 @@ abstract class GLRenderable {
   val distanceLabel = new Label(tools, SWT.NULL)
 	distanceLabel.setText("DistanceSlider")
 
-  val offset_slider = new Slider(tools,SWT.HORIZONTAL | SWT.BORDER)
+  val offset_slider = new Scale(tools,SWT.HORIZONTAL | SWT.BORDER)
   offset_slider.setMinimum(0)
 	offset_slider.setMaximum(100000)
 	offset_slider.setIncrement(1)
@@ -346,7 +346,7 @@ abstract class GLRenderable {
   val offsetLabel = new Label(tools, SWT.NONE)
 	offsetLabel.setText("OffsetSlider")
  
-  val mod_slider = new Slider(tools,SWT.HORIZONTAL | SWT.BORDER)
+  val mod_slider = new Scale(tools,SWT.HORIZONTAL | SWT.BORDER)
   mod_slider.setMinimum(0)
 	mod_slider.setMaximum(100000)
 	mod_slider.setIncrement(1)
