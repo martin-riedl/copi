@@ -24,63 +24,94 @@ import java.util.*;
 import java.io.*;
 import java.net.URISyntaxException;
 
+
+import copi.logic.*;
+import copi.rendering.*;
+
+import java.io.*;
+
 public class ScalaEntryPoint {
-	public void init() {
-		String osName = System.getProperty("os.name");
-		// Get .jar dir. new File(".") and property "user.dir" will not work if
-		// .jar is called from
-		// a different directory, e.g. java -jar /someOtherDirectory/myApp.jar
-		String nativeDir = "";
-		try {
-			nativeDir = new File(this.getClass().getProtectionDomain()
-					.getCodeSource().getLocation().toURI()).getParent();
-		} catch (URISyntaxException uriEx) {
-			try {
-				// Try to resort to current dir. May still fail later due to bad
-				// start dir.
-				uriEx.printStackTrace();
-				nativeDir = new File(".").getCanonicalPath();
-			} catch (IOException ioEx) {
-				// Completely failed
-				System.out
-						.println("Failed to locate native library directory. Error:\n"
-								+ ioEx.toString());
-				ioEx.printStackTrace();
-				System.exit(-1);
-			}
-		}
-		String lwjgldir = nativeDir;
-		// Append library subdir
-		lwjgldir += File.separator + "lib" + File.separator + "lwjglnative"
-				+ File.separator;
-		if (osName.startsWith("Windows")) {
-			lwjgldir += "windows";
-		} else if (osName.startsWith("Linux") || osName.startsWith("FreeBSD")) {
-			lwjgldir += "linux";
-		} else if (osName.startsWith("Mac OS X")) {
-			lwjgldir += "macosx";
-		} else if (osName.startsWith("Solaris") || osName.startsWith("SunOS")) {
-			lwjgldir += "solaris";
-		} else {
-			System.out.println("Unsupported OS: " + osName + ". Exiting.");
-			System.exit(-1);
-		}
-		System.setProperty("org.lwjgl.librarypath", lwjgldir);
-	}
 
 	public static void main(String[] args) {
-		/*
+    /*
 		 * Set lwjgl library path so that LWJGL finds the natives depending on
 		 * the OS.
 		 */
-        System.out.println("Starting COPI ...");
+    String path = "libNativeLWJGL";
+    File libDir = new File(path); 
+    
+    if (!libDir.exists()) {
+      // create native lib folder 
+      libDir.mkdir(); 
+      
+      // retrieve os type
+      String osName = System.getProperty("os.name");
+      
+      // try to determine if the system is 64 bit  
+      boolean is64bit = false;
+      if (System.getProperty("os.name").contains("Windows")) {
+          is64bit = (System.getenv("ProgramFiles(x86)") != null);
+      } else {
+          is64bit = (System.getProperty("os.arch").indexOf("64") != -1);
+      }
+      
+      // construct name of native lib file 
+      String natLibLWJGL = ""; 
+      if (osName.startsWith("Windows")) {
+        natLibLWJGL += "lwjgl";
+        if (is64bit) natLibLWJGL += "64";
+        natLibLWJGL += ".dll";
+      } else if (osName.startsWith("Linux")) {
+        natLibLWJGL += "liblwjgl";
+        if (is64bit) natLibLWJGL += "64";
+        natLibLWJGL += ".so";
+      } else if (osName.startsWith("Mac OS X")) {
+        natLibLWJGL += "liblwjgl";
+        natLibLWJGL += ".jnilib";
+      } else {
+        System.out.println("Unsupported OS: " + osName + ". Exiting.");
+        System.exit(-1);
+      }
+      
+      // try to establish an input stream on the native lib inside the jar
+      InputStream fis = ScalaEntryPoint.class.getResourceAsStream("/"+natLibLWJGL);
+      if (fis == null) {
+          System.out.println("Native library file " + natLibLWJGL + " was not found inside JAR.");
+          System.exit(-1);
+      } 
+      
+      try {
+        // establish an output stream on the target file 
+        File fOut = new File(path + "/" + natLibLWJGL);
+        FileOutputStream fos = new FileOutputStream(fOut);
 
-		(new ScalaEntryPoint()).init();
-		List<String> argList = new ArrayList<String>();
-		argList.add("copi.main");
-		for (String s : args)
-			argList.add(s);
-		scala.tools.nsc.MainGenericRunner.main(argList.toArray(new String[0]));
-
+        // create file at destination if not already existing
+        if (!fOut.exists()) fOut.createNewFile();
+        
+        // making buffer for copy operation 
+        byte[] buffer = new byte[1024];
+        int readBytes;
+   
+        // Open output stream and copy data between source file in JAR and the temporary file
+        try {
+            while ((readBytes = fis.read(buffer)) != -1) {
+                fos.write(buffer, 0, readBytes);
+            }
+        } finally {
+            fos.close();
+            fis.close();
+        }
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
+        System.exit(-1);  
+      }
+    }  
+    
+    // set lwjgl native library path
+    System.setProperty("org.lwjgl.librarypath", libDir.getAbsolutePath());
+    
+    // start COPI
+    System.out.println("Starting COPI ...");
+    (new SICApplicationLogic()).render();
 	}
 }

@@ -28,7 +28,7 @@ import copi.utils._
  * - adding a directory to a project
  * - generating a new timeline
  */
-trait SICApplicationLogic extends GLRenderable {
+class SICApplicationLogic extends GLRenderable {
   /**
    * addNewDirectory adds to the already existing project a timeline (specified by the directory)
    */
