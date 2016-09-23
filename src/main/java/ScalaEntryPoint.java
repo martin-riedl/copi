@@ -29,15 +29,30 @@ import copi.logic.*;
 import copi.rendering.*;
 
 import java.io.*;
+import java.lang.Thread;
+import org.apache.commons.io.FileUtils;
+
+
 
 public class ScalaEntryPoint {
+  static String path = "libNativeLWJGL";
+    
+  private static class JVMShutdownHook extends Thread {
+    public void run() {
+      try {
+        FileUtils.forceDelete(new File(path));
+        System.out.println("Cleaned temporary native libs folder.");
+      } catch (IOException e) {
+      }
+      System.out.println("Exiting COPI.");
+    }
+  }
 
 	public static void main(String[] args) {
     /*
 		 * Set lwjgl library path so that LWJGL finds the natives depending on
 		 * the OS.
 		 */
-    String path = "libNativeLWJGL";
     File libDir = new File(path); 
     
     if (!libDir.exists()) {
@@ -80,11 +95,9 @@ public class ScalaEntryPoint {
           System.exit(-1);
       } 
       
-      try {
-        // establish an output stream on the target file 
-        File fOut = new File(path + "/" + natLibLWJGL);
-        FileOutputStream fos = new FileOutputStream(fOut);
-
+      // establish an output stream on the target file 
+      File fOut = new File(path + "/" + natLibLWJGL);
+      try(FileOutputStream fos = new FileOutputStream(fOut)) {
         // create file at destination if not already existing
         if (!fOut.exists()) fOut.createNewFile();
         
@@ -101,11 +114,16 @@ public class ScalaEntryPoint {
             fos.close();
             fis.close();
         }
-      } catch (Exception e) {
+      } catch (IOException e) {
         System.out.println(e.getMessage());
         System.exit(-1);  
       }
-    }  
+      
+      // register shutdown hook
+      JVMShutdownHook jvmShutdownHook = new JVMShutdownHook();
+      Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
+      
+    }
     
     // set lwjgl native library path
     System.setProperty("org.lwjgl.librarypath", libDir.getAbsolutePath());

@@ -6,6 +6,8 @@ resolvers += "swt-repo" at "https://github.com/maven-eclipse/maven-eclipse.githu
 
 libraryDependencies += "org.eclipse.swt" % "org.eclipse.swt.gtk.linux.x86_64" % "4.3"
 
+libraryDependencies += "org.apache.commons" % "commons-io" % "1.3.2"
+
 seq(lwjglSettings: _*)
 
 // A fork of native-utils from https://github.com/adamheinrich/native-utils that includes a build.sbt in addition to the pom.xml. This allows to use it as a sbt dependency. 
